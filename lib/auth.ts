@@ -7,6 +7,7 @@ import TenantModel from '@/models/tenant';
 import LogModel from '@/models/log';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
