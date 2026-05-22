@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+  const token = await getToken({ req, secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET });
 
   const protectedPaths = ['/dashboard', '/users', '/logs', '/ai', '/documents', '/cms', '/reports'];
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
