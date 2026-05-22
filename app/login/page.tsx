@@ -21,7 +21,13 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     setLoading('google');
-    await signIn('google', { callbackUrl: '/dashboard' });
+    const res = await signIn('google', { callbackUrl: '/dashboard', redirect: false });
+    if (res?.url) {
+      window.location.href = res.url;
+      return;
+    }
+    toast.error(res?.error || 'Google login failed');
+    setLoading(null);
   };
 
   const handleDevLogin = async () => {
