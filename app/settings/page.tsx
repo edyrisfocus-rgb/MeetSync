@@ -144,7 +144,7 @@ export default function SettingsPage() {
                     <div className="flex gap-3">
                       {['#6366f1','#8b5cf6','#06b6d4','#10b981','#f59e0b','#f43f5e'].map(c => (
                         <button key={c} className="w-8 h-8 rounded-full ring-2 ring-offset-2 ring-offset-[#0a0a0f] transition-all hover:scale-110"
-                          style={{ background: c, ringColor: c }} />
+                          style={{ background: c, '--tw-ring-color': c } as React.CSSProperties} />
                       ))}
                     </div>
                   </div>

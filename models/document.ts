@@ -39,5 +39,8 @@ const DocumentSchema = new Schema<IDocument>(
   { timestamps: true }
 );
 
+DocumentSchema.index({ tenantId: 1, createdAt: -1 });
+DocumentSchema.index({ tenantId: 1, status: 1 });
+
 const DocumentModel: Model<IDocument> = mongoose.models.Document || mongoose.model<IDocument>('Document', DocumentSchema);
 export default DocumentModel;

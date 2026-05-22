@@ -186,7 +186,7 @@ export default function AiPage() {
               </div>
               {loading ? (
                 <div className="space-y-3">
-                  {[...Array(6)].map((_,i) => <div key={i} className="shimmer h-4 rounded-lg" style={{ width: `${60 + Math.random()*40}%` }} />)}
+                  {[72, 88, 64, 96, 78, 70].map((width, i) => <div key={i} className="shimmer h-4 rounded-lg" style={{ width: `${width}%` }} />)}
                 </div>
               ) : output ? (
                 <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap overflow-y-auto max-h-[400px] pr-2" style={{ fontFamily: 'monospace' }}>

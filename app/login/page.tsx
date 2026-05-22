@@ -2,7 +2,7 @@
 
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
-import { Building2, Chrome, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Building2, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const devRoles = ['super_admin', 'admin', 'staff', 'member', 'viewer'];
@@ -66,7 +66,7 @@ export default function LoginPage() {
             onMouseEnter={e => (e.currentTarget.style.opacity = '0.92')}
             onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
           >
-            <Chrome size={18} />
+            <span className="text-base font-bold">G</span>
             {loading === 'google' ? 'Signing in...' : 'Continue with Google'}
           </button>
 

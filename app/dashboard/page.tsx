@@ -36,14 +36,14 @@ const variantStyles: Record<string, { border: string; icon: string; glow: string
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect('/login');
-  const user = session.user as any;
+  const user = session.user;
 
   return (
     <div>
       <Topbar
         title="Dashboard"
         subtitle={`Welcome back, ${user.name?.split(' ')[0] || 'User'} 👋`}
-        userName={user.name}
+        userName={user.name || undefined}
         orgName={user.organizationName || 'MeetSync'}
       />
 

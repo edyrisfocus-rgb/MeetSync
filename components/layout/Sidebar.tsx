@@ -145,7 +145,7 @@ export default function Sidebar({ userRole = 'member', userName = 'User', userEm
             <LogOut size={18} />
           </button>
         )}
-      </nav>
+      </div>
     </aside>
   );
 }

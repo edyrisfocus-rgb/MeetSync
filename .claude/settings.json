@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"app/api/documents/[id]\")",
+      "Bash(npm run *)"
+    ],
+    "additionalDirectories": [
+      "/Users/macbookair/Documents/VIDE CODING/MeetSync/MeetSync/app/api/documents"
+    ]
+  }
+}

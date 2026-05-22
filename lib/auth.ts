@@ -39,44 +39,44 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (account?.provider === 'google') {
         try {
           await connectDB();
-          let dbUser = await UserModel.findOne({ email: user.email });
+          const email = user.email || '';
+          let dbUser = await UserModel.findOne({ email });
           if (!dbUser) {
             dbUser = await UserModel.create({
-              name: user.name,
-              email: user.email,
-              image: user.image,
+              name: user.name || email,
+              email,
+              image: user.image || undefined,
               role: 'member',
               tenantId: 'default',
               status: 'active',
             });
           }
-          (user as any).role = dbUser.role;
-          (user as any).tenantId = dbUser.tenantId;
-          (user as any).organizationName = dbUser.organizationName || 'MeetSync';
+          user.role = dbUser.role;
+          user.tenantId = dbUser.tenantId;
+          user.organizationName = dbUser.organizationName || 'MeetSync';
         } catch (err) {
           console.error('DB signIn error:', err);
-          // Allow login even if DB is unreachable
-          (user as any).role = 'member';
-          (user as any).tenantId = 'default';
-          (user as any).organizationName = 'MeetSync';
+          user.role = 'member';
+          user.tenantId = 'default';
+          user.organizationName = 'MeetSync';
         }
       }
       return true;
     },
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role;
-        token.tenantId = (user as any).tenantId;
-        token.organizationName = (user as any).organizationName;
+        token.role = user.role;
+        token.tenantId = user.tenantId;
+        token.organizationName = user.organizationName;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).role = token.role;
-        (session.user as any).tenantId = token.tenantId;
-        (session.user as any).organizationName = token.organizationName;
-        (session.user as any).id = token.sub;
+        session.user.role = typeof token.role === 'string' ? token.role : undefined;
+        session.user.tenantId = typeof token.tenantId === 'string' ? token.tenantId : undefined;
+        session.user.organizationName = typeof token.organizationName === 'string' ? token.organizationName : undefined;
+        session.user.id = token.sub || '';
       }
       return session;
     },
