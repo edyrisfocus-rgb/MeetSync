@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import DocumentModel from '@/models/document';
 import LogModel from '@/models/log';
+import TenantModel from '@/models/tenant';
 import UserModel from '@/models/user';
 import { redirect } from 'next/navigation';
 import Topbar from '@/components/layout/Topbar';
@@ -30,11 +31,52 @@ function formatDate(date: Date) {
 
 export default async function DashboardPage() {
   const session = await auth();
-  if (!session?.user?.tenantId) redirect('/login');
-  const user = session.user;
+  if (!session?.user?.email) redirect('/login');
+
+  const sessionEmail = session.user.email;
 
   await connectDB();
-  const tenantId = user.tenantId;
+
+  let user = session.user;
+  let tenantId = user.tenantId;
+
+  if (!tenantId) {
+    const email = sessionEmail.toLowerCase();
+    const domain = email.split('@')[1] || 'personal';
+    const slug = domain.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'personal';
+    const organizationName = domain === 'gmail.com' ? user.name || email : domain.split('.')[0].replace(/\b\w/g, (c) => c.toUpperCase());
+    const tenant = await TenantModel.findOneAndUpdate(
+      { slug },
+      { $setOnInsert: { name: organizationName, slug, domain } },
+      { new: true, upsert: true }
+    );
+
+    let dbUser = await UserModel.findOne({ email });
+    if (!dbUser) {
+      const userCount = await UserModel.countDocuments({ tenantId: tenant._id.toString() });
+      dbUser = await UserModel.create({
+        name: user.name || email,
+        email,
+        image: user.image || undefined,
+        role: userCount === 0 ? 'admin' : 'member',
+        tenantId: tenant._id.toString(),
+        organizationName: tenant.name,
+        status: 'active',
+        lastLogin: new Date(),
+      });
+    }
+
+    tenantId = dbUser.tenantId;
+    user = {
+      ...user,
+      name: dbUser.name,
+      role: dbUser.role,
+      tenantId,
+      organizationName: dbUser.organizationName || tenant.name,
+    };
+  }
+
+  if (!tenantId) redirect('/login');
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 
