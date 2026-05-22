@@ -101,6 +101,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.tenantId = user.tenantId;
         token.organizationName = user.organizationName;
       }
+
+      if (!token.tenantId && token.email) {
+        await connectDB();
+        const dbUser = await UserModel.findOne({ email: token.email.toLowerCase() }).lean();
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.tenantId = dbUser.tenantId;
+          token.organizationName = dbUser.organizationName;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
