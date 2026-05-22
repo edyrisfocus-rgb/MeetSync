@@ -3,6 +3,8 @@ import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { connectDB } from './db';
 import UserModel from '@/models/user';
+import TenantModel from '@/models/tenant';
+import LogModel from '@/models/log';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -37,29 +39,57 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === 'google') {
-        try {
-          await connectDB();
-          const email = user.email || '';
-          let dbUser = await UserModel.findOne({ email });
-          if (!dbUser) {
-            dbUser = await UserModel.create({
-              name: user.name || email,
-              email,
-              image: user.image || undefined,
-              role: 'member',
-              tenantId: 'default',
-              status: 'active',
-            });
-          }
-          user.role = dbUser.role;
-          user.tenantId = dbUser.tenantId;
-          user.organizationName = dbUser.organizationName || 'MeetSync';
-        } catch (err) {
-          console.error('DB signIn error:', err);
-          user.role = 'member';
-          user.tenantId = 'default';
-          user.organizationName = 'MeetSync';
+        await connectDB();
+        const email = user.email?.toLowerCase();
+        if (!email) return false;
+
+        const domain = email.split('@')[1] || 'personal';
+        const slug = domain.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'personal';
+        const organizationName = domain === 'gmail.com' ? user.name || email : domain.split('.')[0].replace(/\b\w/g, (c) => c.toUpperCase());
+        const tenant = await TenantModel.findOneAndUpdate(
+          { slug },
+          { $setOnInsert: { name: organizationName, slug, domain } },
+          { new: true, upsert: true }
+        );
+
+        let dbUser = await UserModel.findOne({ email });
+        if (!dbUser) {
+          const userCount = await UserModel.countDocuments({ tenantId: tenant._id.toString() });
+          dbUser = await UserModel.create({
+            name: user.name || email,
+            email,
+            image: user.image || undefined,
+            role: userCount === 0 ? 'admin' : 'member',
+            tenantId: tenant._id.toString(),
+            organizationName: tenant.name,
+            status: 'active',
+            lastLogin: new Date(),
+          });
+        } else {
+          dbUser.name = user.name || dbUser.name;
+          dbUser.image = user.image || dbUser.image;
+          dbUser.tenantId = dbUser.tenantId || tenant._id.toString();
+          dbUser.organizationName = dbUser.organizationName || tenant.name;
+          dbUser.lastLogin = new Date();
+          await dbUser.save();
         }
+
+        if (dbUser.status !== 'active') return false;
+
+        await LogModel.create({
+          userId: dbUser._id.toString(),
+          userName: dbUser.name,
+          userEmail: dbUser.email,
+          tenantId: dbUser.tenantId,
+          action: 'login',
+          resource: 'authentication',
+          details: 'Google login',
+          status: 'success',
+        });
+
+        user.role = dbUser.role;
+        user.tenantId = dbUser.tenantId;
+        user.organizationName = dbUser.organizationName || tenant.name;
       }
       return true;
     },

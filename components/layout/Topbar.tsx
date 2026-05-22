@@ -10,15 +10,9 @@ interface TopbarProps {
   orgName?: string;
 }
 
-const mockNotifications = [
-  { id: 1, message: 'New document pending approval', time: '2m ago', unread: true },
-  { id: 2, message: 'User John Doe was added to your org', time: '1h ago', unread: true },
-  { id: 3, message: 'Report export completed', time: '3h ago', unread: false },
-];
-
-export default function Topbar({ title, subtitle, userName = 'User', orgName = 'MeetSync' }: TopbarProps) {
+export default function Topbar({ title, subtitle, orgName = 'Organization' }: TopbarProps) {
   const [notifOpen, setNotifOpen] = useState(false);
-  const unreadCount = mockNotifications.filter(n => n.unread).length;
+  const unreadCount = 0;
 
   return (
     <header
@@ -75,17 +69,8 @@ export default function Topbar({ title, subtitle, userName = 'User', orgName = '
                   <span className="text-sm font-semibold text-white">Notifications</span>
                   <span className="badge badge-info">{unreadCount} new</span>
                 </div>
-                {mockNotifications.map(n => (
-                  <div key={n.id} className="px-4 py-3 hover:bg-white/5 transition-all cursor-pointer flex gap-3">
-                    <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.unread ? 'bg-indigo-400' : 'bg-slate-600'}`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-300 leading-snug">{n.message}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">{n.time}</p>
-                    </div>
-                  </div>
-                ))}
-                <div className="px-4 pt-2 pb-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                  <button className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">View all notifications</button>
+                <div className="px-4 py-6 text-center text-sm text-slate-500">
+                  No notifications yet.
                 </div>
               </div>
             )}
